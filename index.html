@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebaseチャット</title>
+</head>
+<body>
+    <h1>Firebaseチャット</h1>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <input id="message-input" type="text" placeholder="メッセージを入力">
+        <button id="send-button">送信</button>
+    </div>
+
+    <!-- Firebase App (全体的な設定) -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js"></script>
+    <!-- Firebase Authentication -->
+<script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+
+  <!-- 自作のJavaScriptファイル -->
+    <script src="main.js"></script>
+</body>
+</html>
