@@ -86,3 +86,110 @@ function loadMessages() {
         document.getElementById('messages').appendChild(messageElement);
     });
 }
+console.log('main.js is loaded');
+
+// Firebaseの設定を貼り付ける
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+// Firebaseを初期化
+firebase.initializeApp(firebaseConfig);
+console.log('Firebase initialized');
+
+// Firebaseのデータベース参照を取得
+const db = firebase.database().ref('messages');
+console.log('Database reference acquired');
+
+document.getElementById('login-button').addEventListener('click', () => {
+    console.log('Login button clicked');
+    login();
+});
+
+document.getElementById('signup-button').addEventListener('click', () => {
+    console.log('Signup button clicked');
+    signup();
+});
+
+function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    console.log('Attempting to login with email:', email);
+
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // ログイン成功
+            console.log('Login successful:', userCredential);
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('chat-container').style.display = 'block';
+            loadMessages();
+        })
+        .catch((error) => {
+            console.error('Login error:', error);
+            alert('Login error: ' + error.message);  // エラーをアラートで表示
+        });
+}
+
+function signup() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    console.log('Attempting to signup with email:', email);
+
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            // サインアップ成功
+            console.log('Signup successful:', userCredential);
+            login();
+        })
+        .catch((error) => {
+            console.error('Signup error:', error);
+            alert('Signup error: ' + error.message);  // エラーをアラートで表示
+        });
+}
+
+// ユーザーの認証状態を監視
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // ユーザーがサインインしている場合
+        console.log('User is signed in:', user);
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('chat-container').style.display = 'block';
+        loadMessages();
+    } else {
+        // ユーザーがサインアウトしている場合
+        console.log('User is signed out');
+        document.getElementById('login-container').style.display = 'block';
+        document.getElementById('chat-container').style.display = 'none';
+    }
+});
+
+document.getElementById('send-button').addEventListener('click', () => {
+    const message = document.getElementById('message-input').value;
+    if (message) {
+        console.log('Sending message:', message);
+        db.push().set({
+            message: message,
+            timestamp: Date.now()
+        });
+        document.getElementById('message-input').value = '';
+    }
+});
+
+// メッセージをリアルタイムで受信
+function loadMessages() {
+    db.on('child_added', (snapshot) => {
+        const messageData = snapshot.val();
+        console.log('New message received:', messageData);
+        const messageElement = document.createElement('div');
+        messageElement.textContent = messageData.message;
+        document.getElementById('messages').appendChild(messageElement);
+    });
+}
