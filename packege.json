@@ -1,0 +1,12 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "description": "FirebaseとGithub Pagesを使ってチャットサイトを作る",
+  "scripts": {
+    "start": "firebase serve",
+    "build": "firebase deploy"
+  },
+  "dependencies": {
+    "firebase": "^9.0.0"
+  }
+}
