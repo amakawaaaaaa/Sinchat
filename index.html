@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase チャット</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #chat-box { height: 300px; border: 1px solid #ccc; overflow-y: scroll; margin-bottom: 10px; padding: 10px; }
+        #message-input { width: 70%; padding: 5px; }
+        #send-button { padding: 5px 10px; }
+        #login-form, #chat-form { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Firebase チャット</h1>
+    
+    <div id="login-form">
+        <input type="email" id="email-input" placeholder="メールアドレス">
+        <input type="password" id="password-input" placeholder="パスワード">
+        <button id="login-button">ログイン</button>
+        <button id="signup-button">新規登録</button>
+    </div>
+
+    <div id="chat-form">
+        <div id="chat-box"></div>
+        <input type="text" id="message-input" placeholder="メッセージを入力...">
+        <button id="send-button">送信</button>
+        <button id="logout-button">ログアウト</button>
+    </div>
+
+    <!-- Firebase SDKの読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-app.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-auth.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.10.1/firebase-database.min.js"></script>
+
+    <script>
+        // Firebaseの設定
+        const firebaseConfig = {
+            // ここにFirebaseのコンフィグを貼り付けます
+        };
+
+        // Firebaseの初期化
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        const loginForm = document.getElementById('login-form');
+        const chatForm = document.getElementById('chat-form');
+        const chatBox = document.getElementById('chat-box');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const loginButton = document.getElementById('login-button');
+        const signupButton = document.getElementById('signup-button');
+        const logoutButton = document.getElementById('logout-button');
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+
+        // 認証状態の監視
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                loginForm.style.display = 'none';
+                chatForm.style.display = 'block';
+                loadMessages();
+            } else {
+                loginForm.style.display = 'block';
+                chatForm.style.display = 'none';
+            }
+        });
+
+        // メッセージ送信
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message && auth.currentUser) {
+                database.ref('messages').push({
+                    userId: auth.currentUser.uid,
+                    text: message,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                messageInput.value = '';
+            }
+        }
+
+        // メッセージ読み込み
+        function loadMessages() {
+            database.ref('messages').on('child_added', snapshot => {
+                const message = snapshot.val();
+                const messageElement = document.createElement('p');
+                messageElement.textContent = `${message.userId}: ${message.text}`;
+                chatBox.appendChild(messageElement);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        // イベントリスナー
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', e => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        loginButton.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => alert(error.message));
+        });
+
+        signupButton.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            auth.createUserWithEmailAndPassword(email, password)
+                .catch(error => alert(error.message));
+        });
+
+        logoutButton.addEventListener('click', () => {
+            auth.signOut();
+        });
+    </script>
+</body>
+</html>
