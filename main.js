@@ -1,5 +1,4 @@
 // Firebaseの設定を貼り付ける
-const firebaseConfig = {
     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAd-MvBpHpjNh2mSrhYv204CFr5DS7UuyU",
@@ -10,7 +9,7 @@ const firebaseConfig = {
   messagingSenderId: "641553449502",
   appId: "1:641553449502:web:c8d837c0ab93a0e1d1640f",
   measurementId: "G-0RW78LR627"
-};};
+};
 
 // Firebaseを初期化
 firebase.initializeApp(firebaseConfig);
