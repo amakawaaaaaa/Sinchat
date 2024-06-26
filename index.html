@@ -3,30 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase チャット (GitHub Pages版)</title>
+    <title>GitHub Pages Firebase チャット</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        #chat-box { height: 300px; border: 1px solid #ccc; overflow-y: scroll; margin-bottom: 10px; padding: 10px; }
-        #message-input { width: 70%; padding: 5px; }
-        #send-button { padding: 5px 10px; }
-        #login-form, #chat-form { display: none; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        #chat-box {
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow-y: scroll;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .message-user {
+            background-color: #e6f3ff;
+        }
+        .message-other {
+            background-color: #f0f0f0;
+        }
+        #message-input {
+            width: calc(100% - 110px);
+            padding: 5px;
+            margin-right: 5px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #login-form, #chat-form {
+            display: none;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        #error-message {
+            color: red;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>Firebase チャット (GitHub Pages版)</h1>
-    
-    <div id="login-form">
-        <input type="email" id="email-input" placeholder="メールアドレス">
-        <input type="password" id="password-input" placeholder="パスワード">
-        <button id="login-button">ログイン</button>
-        <button id="signup-button">新規登録</button>
-    </div>
+    <div class="container">
+        <h1>GitHub Pages Firebase チャット</h1>
+        
+        <div id="error-message"></div>
 
-    <div id="chat-form">
-        <div id="chat-box"></div>
-        <input type="text" id="message-input" placeholder="メッセージを入力...">
-        <button id="send-button">送信</button>
-        <button id="logout-button">ログアウト</button>
+        <div id="login-form">
+            <div class="form-group">
+                <label for="email-input">メールアドレス:</label>
+                <input type="email" id="email-input" placeholder="example@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password-input">パスワード:</label>
+                <input type="password" id="password-input" placeholder="パスワード">
+            </div>
+            <button id="login-button">ログイン</button>
+            <button id="signup-button">新規登録</button>
+        </div>
+
+        <div id="chat-form">
+            <div id="chat-box"></div>
+            <input type="text" id="message-input" placeholder="メッセージを入力...">
+            <button id="send-button">送信</button>
+            <button id="logout-button">ログアウト</button>
+        </div>
     </div>
 
     <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
@@ -49,8 +122,7 @@ const firebaseConfig = {
   messagingSenderId: "641553449502",
   appId: "1:641553449502:web:c8d837c0ab93a0e1d1640f",
   measurementId: "G-0RW78LR627"
-};
-        };
+};        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -68,6 +140,7 @@ const firebaseConfig = {
         const logoutButton = document.getElementById('logout-button');
         const emailInput = document.getElementById('email-input');
         const passwordInput = document.getElementById('password-input');
+        const errorMessage = document.getElementById('error-message');
 
         // 認証状態の監視
         auth.onAuthStateChanged(user => {
@@ -75,9 +148,11 @@ const firebaseConfig = {
                 loginForm.style.display = 'none';
                 chatForm.style.display = 'block';
                 loadMessages();
+                errorMessage.textContent = '';
             } else {
                 loginForm.style.display = 'block';
                 chatForm.style.display = 'none';
+                chatBox.innerHTML = '';
             }
         });
 
@@ -89,6 +164,9 @@ const firebaseConfig = {
                     userId: auth.currentUser.uid,
                     text: message,
                     timestamp: firebase.database.ServerValue.TIMESTAMP
+                }).catch(error => {
+                    console.error("Error sending message: ", error);
+                    errorMessage.textContent = "メッセージの送信に失敗しました。";
                 });
                 messageInput.value = '';
             }
@@ -98,8 +176,10 @@ const firebaseConfig = {
         function loadMessages() {
             database.ref('messages').on('child_added', snapshot => {
                 const message = snapshot.val();
-                const messageElement = document.createElement('p');
-                messageElement.textContent = `${message.userId}: ${message.text}`;
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add(message.userId === auth.currentUser.uid ? 'message-user' : 'message-other');
+                messageElement.textContent = `${message.userId === auth.currentUser.uid ? 'あなた' : '他のユーザー'}: ${message.text}`;
                 chatBox.appendChild(messageElement);
                 chatBox.scrollTop = chatBox.scrollHeight;
             });
@@ -115,18 +195,33 @@ const firebaseConfig = {
             const email = emailInput.value;
             const password = passwordInput.value;
             auth.signInWithEmailAndPassword(email, password)
-                .catch(error => alert(error.message));
+                .then(() => {
+                    errorMessage.textContent = '';
+                })
+                .catch(error => {
+                    console.error("Error during login: ", error);
+                    errorMessage.textContent = "ログインに失敗しました。メールアドレスとパスワードを確認してください。";
+                });
         });
 
         signupButton.addEventListener('click', () => {
             const email = emailInput.value;
             const password = passwordInput.value;
             auth.createUserWithEmailAndPassword(email, password)
-                .catch(error => alert(error.message));
+                .then(() => {
+                    errorMessage.textContent = '';
+                })
+                .catch(error => {
+                    console.error("Error during signup: ", error);
+                    errorMessage.textContent = "新規登録に失敗しました。別のメールアドレスを試すか、パスワードを変更してください。";
+                });
         });
 
         logoutButton.addEventListener('click', () => {
-            auth.signOut();
+            auth.signOut().catch(error => {
+                console.error("Error during logout: ", error);
+                errorMessage.textContent = "ログアウトに失敗しました。";
+            });
         });
     </script>
 </body>
